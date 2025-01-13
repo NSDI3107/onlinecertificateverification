@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Certificate Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 300px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 20px;
+      display: none;
+    }
+    img {
+      max-width: 150px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Online Certificate Verification</h1>
+  <p>Enter your Registration Number to verify your certificate:</p>
+  <input type="text" id="regNumber" placeholder="Enter Registration Number">
+  <button onclick="verifyCertificate()">Verify</button>
+
+  <div class="result" id="result">
+    <h2>Certificate Details</h2>
+    <img id="photo" alt="Photo">
+    <p><strong>Registration Number:</strong> <span id="regNum"></span></p>
+    <p><strong>Roll Number:</strong> <span id="rollNum"></span></p>
+    <p><strong>Name:</strong> <span id="name"></span></p>
+    <p><strong>Course Name:</strong> <span id="course"></span></p>
+    <p><strong>Training Program Date:</strong> <span id="date"></span></p>
+  </div>
+
+  <script>
+    const sheetID = "your_google_sheet_id_here";
+    const API_KEY = "your_google_api_key_here";
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${1BHgJBmT3-bBpOFHNSH_LnZOrHLa1FH2A-kCJ0bEBblY/edit?gid=0#gid=0}/values/Sheet1?key=${AIzaSyBc6NPDcCLXuVYMGxe7canCPOlBu3F_szk}`;
+
+    async function verifyCertificate() {
+      const regNumber = document.getElementById("regNumber").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "none";
+
+      if (!regNumber) {
+        alert("Please enter a registration number.");
+        return;
+      }
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const rows = data.values;
+
+        // Assuming the first row contains headers
+        const headers = rows[0];
+        const regIndex = headers.indexOf("Registration Number");
+        const rollIndex = headers.indexOf("Roll Number");
+        const nameIndex = headers.indexOf("Name");
+        const courseIndex = headers.indexOf("Course Name");
+        const dateIndex = headers.indexOf("Training Program Date");
+        const photoIndex = headers.indexOf("Photo URL");
+
+        const row = rows.find(row => row[regIndex] === regNumber);
+
+        if (row) {
+          document.getElementById("photo").src = row[photoIndex] || "";
+          document.getElementById("regNum").textContent = row[regIndex];
+          document.getElementById("rollNum").textContent = row[rollIndex];
+          document.getElementById("name").textContent = row[nameIndex];
+          document.getElementById("course").textContent = row[courseIndex];
+          document.getElementById("date").textContent = row[dateIndex];
+          resultDiv.style.display = "block";
+        } else {
+          alert("Certificate not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        alert("Unable to fetch certificate data. Please try again later.");
+      }
+    }
+  </script>
+</body>
+</html>
